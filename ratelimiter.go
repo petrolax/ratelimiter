@@ -7,22 +7,28 @@ import (
 )
 
 type RateLimiter struct {
-	maxPerMinut   int32
-	countPerMinut int32
-	maxNow        int32
-	countNow      int32
-	num           chan int
-	total         int64
+	maxPerMinute   int32
+	countPerMinute int32
+	maxNow         int32
+	countNow       int32
+	num            chan int
+	total          int64
 }
 
-func NewRateLimiter(data chan int) *RateLimiter {
-	rt := &RateLimiter{
-		num:         data,
-		maxNow:      30,
-		maxPerMinut: 100,
+func NewRateLimiter(data chan int, now, perMinute int32) *RateLimiter {
+	if now == 0 || now < 0 {
+		now = 30
 	}
 
-	return rt
+	if perMinute == 0 || perMinute < 0 {
+		perMinute = 100
+	}
+
+	return &RateLimiter{
+		num:          data,
+		maxNow:       now,
+		maxPerMinute: perMinute,
+	}
 }
 
 func (rt *RateLimiter) Run() (int64, string) {
@@ -37,16 +43,16 @@ func (rt *RateLimiter) Run() (int64, string) {
 				return rt.total, "RateLimiter was stop"
 			}
 
-			if atomic.LoadInt32(&rt.countNow) == rt.maxNow || rt.countPerMinut == rt.maxPerMinut {
+			if atomic.LoadInt32(&rt.countNow) == rt.maxNow || rt.countPerMinute == rt.maxPerMinute {
 				continue
 			}
 
 			wg.Add(1)
 			atomic.AddInt32(&rt.countNow, int32(1))
-			rt.countPerMinut++
+			rt.countPerMinute++
 			go rt.worker(val, &wg)
 		case <-ticker.C:
-			rt.countPerMinut = atomic.LoadInt32(&rt.countNow)
+			rt.countPerMinute = atomic.LoadInt32(&rt.countNow)
 		}
 	}
 

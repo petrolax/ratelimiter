@@ -8,7 +8,7 @@ import (
 
 func TestRateLimiter(t *testing.T) {
 	intch := make(chan int)
-	rt := NewRateLimiter(intch)
+	rt := NewRateLimiter(intch, 10, 100)
 
 	go func() {
 		var wg sync.WaitGroup
