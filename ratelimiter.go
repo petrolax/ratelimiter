@@ -13,7 +13,6 @@ type RateLimiter struct {
 	countNow      int32
 	num           chan int
 	total         int64
-	mu            sync.RWMutex
 }
 
 func NewRateLimiter(data chan int) *RateLimiter {
@@ -41,10 +40,6 @@ func (rt *RateLimiter) Run() (int64, string) {
 			if atomic.LoadInt32(&rt.countNow) == rt.maxNow || rt.countPerMinut == rt.maxPerMinut {
 				continue
 			}
-
-			// if rt.countPerMinut == rt.maxPerMinut {
-			// 	continue
-			// }
 
 			wg.Add(1)
 			atomic.AddInt32(&rt.countNow, int32(1))
