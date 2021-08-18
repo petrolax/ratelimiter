@@ -16,11 +16,11 @@ type RateLimiter struct {
 }
 
 func NewRateLimiter(data chan int, now, perMinute int32) *RateLimiter {
-	if now == 0 || now < 0 {
+	if now <= 0 {
 		now = 30
 	}
 
-	if perMinute == 0 || perMinute < 0 {
+	if perMinute <= 0 {
 		perMinute = 100
 	}
 
